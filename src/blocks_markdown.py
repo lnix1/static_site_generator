@@ -1,6 +1,7 @@
 from inline_markdown import text_to_textnodes
 from textnode import text_node_to_html_node
 from htmlnode import ParentNode
+import os
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -8,6 +9,12 @@ block_type_code = "code"
 block_type_quote = "quote"
 block_type_olist = "ordered_list"
 block_type_ulist = "unordered_list"
+
+def extract_title(markdown):
+    title_list = [x for x in markdown.split("\n") if x.startswith("# ")]
+    if len(title_list) == 0:
+        raise Exception("Document format error: No header")
+    return title_list[0][2:]
 
 def markdown_to_blocks(markdown):
     blocks = markdown.split("\n\n")
@@ -140,4 +147,27 @@ def quote_to_html_node(block):
     content = " ".join(new_lines)
     children = text_to_children(content)
     return ParentNode("blockquote", children)
+
+def generate_page(from_path, template_path, dest_path):
+    print(f" * {from_path} {template_path} -> {dest_path}")
+    from_file = open(from_path, "r")
+    markdown_content = from_file.read()
+    from_file.close()
+
+    template_file = open(template_path, "r")
+    template = template_file.read()
+    template_file.close()
+
+    node = markdown_to_html_node(markdown_content)
+    html = node.to_html()
+
+    title = extract_title(markdown_content)
+    template = template.replace("{{ Title }}", title)
+    template = template.replace("{{ Content }}", html)
+
+    dest_dir_path = os.path.dirname(dest_path)
+    if dest_dir_path != "":
+        os.makedirs(dest_dir_path, exist_ok=True)
+    to_file = open(dest_path, "w")
+    to_file.write(template)
 
