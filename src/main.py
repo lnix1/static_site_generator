@@ -1,5 +1,5 @@
 from textnode import TextNode
-from blocks_markdown import generate_page
+from blocks_markdown import generate_pages_recursive
 import os
 import shutil
 
@@ -25,7 +25,7 @@ def copy_directory_to_directory(destination, origin):
 
 def main():
     copy_directory_to_directory("public", "static")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
 
 if __name__ == "__main__":
     main()
